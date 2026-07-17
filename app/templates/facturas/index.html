@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block titulo %}Facturación - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-cash-stack"></i> Facturación</h2>
+</div>
+
+<div id="alertaFacturas"></div>
+
+<!-- Caja -->
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-safe"></i> Caja</strong>
+        <div id="botonesCaja"></div>
+    </div>
+    <div class="card-body" id="panelCaja">
+        Cargando estado de caja...
+    </div>
+</div>
+
+<!-- Reportes de caja -->
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-bar-chart-line"></i> Reportes de caja</strong>
+        <div class="d-flex gap-2">
+            <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-primary active" id="btnRptCuadre" onclick="cambiarReporteCaja('cuadre')">Cuadre del día</button>
+                <button class="btn btn-outline-primary" id="btnRptDia" onclick="cambiarReporteCaja('dia')">Por día</button>
+                <button class="btn btn-outline-primary" id="btnRptSemana" onclick="cambiarReporteCaja('semana')">Por semana</button>
+                <button class="btn btn-outline-primary" id="btnRptMes" onclick="cambiarReporteCaja('mes')">Por mes</button>
+                <button class="btn btn-outline-primary" id="btnRptAnio" onclick="cambiarReporteCaja('anio')">Por año</button>
+                <button class="btn btn-outline-secondary" id="btnRptRango" onclick="abrirModalRangoFechas()"><i class="bi bi-calendar-range"></i> Rango</button>
+            </div>
+            <button class="btn btn-sm btn-outline-dark" onclick="imprimirResumen()" title="Imprimir reporte actual">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+        </div>
+    </div>
+    <div class="card-body" id="panelReporteCaja">
+        <div class="text-muted small">Cargando reporte...</div>
+    </div>
+</div>
+
+<!-- Modal: rango de fechas -->
+<div class="modal fade" id="modalRangoFechas" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-calendar-range"></i> Seleccionar rango</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Desde</label>
+                <input type="date" class="form-control" id="rptFechaDesde">
+                <label class="form-label mt-2">Hasta</label>
+                <input type="date" class="form-control" id="rptFechaHasta">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary btn-sm" onclick="cambiarReporteCaja('rango')" data-bs-dismiss="modal">Ver reporte</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>N.° Factura</th>
+                    <th>Orden</th>
+                    <th>Estado</th>
+                    <th>Subtotal</th>
+                    <th>Copago paciente</th>
+                    <th>Cubierto convenio</th>
+                    <th>Copago pagado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaFacturas">
+                <tr><td colspan="8" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: abrir caja -->
+<div class="modal fade" id="modalAbrirCaja" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-unlock"></i> Abrir caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalAbrirCaja"></div>
+                <label class="form-label">Monto inicial en caja</label>
+                <input type="number" step="0.01" class="form-control" id="cajaMontoInicial" value="0">
+                <label class="form-label mt-2">Observaciones (opcional)</label>
+                <textarea class="form-control" id="cajaObservacionesApertura" rows="2"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnConfirmarAbrirCaja">Abrir caja</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: cerrar caja -->
+<div class="modal fade" id="modalCerrarCaja" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-lock"></i> Cuadre de Caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalCerrarCaja"></div>
+                <div id="resumenCierreCaja" class="mb-3"></div>
+
+                <h6 class="fw-bold mb-2"><i class="bi bi-cash-coin"></i> Conteo por denominación</h6>
+                <p class="text-muted small">Ingrese la cantidad de cada billete y moneda que contiene la caja.</p>
+
+                <div class="row">
+                    <!-- Billetes -->
+                    <div class="col-md-6">
+                        <div class="card mb-2">
+                            <div class="card-header bg-white py-1"><strong>Billetes</strong></div>
+                            <div class="card-body p-2">
+                                <table class="table table-sm mb-0" id="tablaBilletes">
+                                    <thead><tr><th>Denominación</th><th>Cantidad</th><th>Subtotal</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Monedas -->
+                    <div class="col-md-6">
+                        <div class="card mb-2">
+                            <div class="card-header bg-white py-1"><strong>Monedas</strong></div>
+                            <div class="card-body p-2">
+                                <table class="table table-sm mb-0" id="tablaMonedas">
+                                    <thead><tr><th>Denominación</th><th>Cantidad</th><th>Subtotal</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-2 p-2 bg-light rounded">
+                    <strong>Total contado:</strong>
+                    <span class="fs-5 fw-bold text-primary" id="totalDenominaciones">$0</span>
+                </div>
+
+                <div class="mt-2">
+                    <label class="form-label">Observaciones (opcional)</label>
+                    <textarea class="form-control" id="cajaObservacionesCierre" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-danger" id="btnConfirmarCerrarCaja">
+                    <i class="bi bi-lock"></i> Cerrar caja
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: historial de cierres -->
+<div class="modal fade" id="modalHistorialCaja" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Historial de cuadres de caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Fecha cierre</th><th>M. Inicial</th><th>Ingresos</th><th>Copagos</th><th>Facturado</th><th>Gastos</th><th>Compras</th><th>M. Esperado</th><th>M. Contado</th><th>Diferencia</th></tr>
+                    </thead>
+                    <tbody id="tablaHistorialCaja">
+                        <tr><td colspan="10" class="text-muted small">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: ingreso manual a caja -->
+<div class="modal fade" id="modalIngresoCaja" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Ingreso manual a caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalIngreso"></div>
+                <label class="form-label">Valor *</label>
+                <input type="number" step="0.01" class="form-control" id="ingresoValor" placeholder="0">
+                <label class="form-label mt-2">Origen del dinero *</label>
+                <input class="form-control" id="ingresoOrigen" placeholder="Ej: Aporte del propietario, Préstamo bancario">
+                <label class="form-label mt-2">Descripción (opcional)</label>
+                <textarea class="form-control" id="ingresoDescripcion" rows="2"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-info" id="btnConfirmarIngreso"><i class="bi bi-check-circle"></i> Registrar ingreso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: modificar factura -->
+<div class="modal fade" id="modalModificarFactura" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> Modificar factura</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalModificar"></div>
+                <input type="hidden" id="modFacturaId">
+                <div class="mb-2">
+                    <label class="form-label">N.° Factura</label>
+                    <input class="form-control" id="modFacturaNumero" readonly>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Orden</label>
+                    <input class="form-control" id="modFacturaOrden" readonly>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Subtotal</label>
+                        <input type="number" step="0.01" class="form-control" id="modFacturaSubtotal">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Impuestos</label>
+                        <input type="number" step="0.01" class="form-control" id="modFacturaImpuestos">
+                    </div>
+                </div>
+                <div class="row g-2 mt-1">
+                    <div class="col-6">
+                        <label class="form-label">Total</label>
+                        <input type="number" step="0.01" class="form-control" id="modFacturaTotal" readonly>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="modFacturaEstado">
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="PAGADO">Pagado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarModFactura">
+                    <i class="bi bi-save"></i> Guardar cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/facturas.js"></script>
+{% endblock %}

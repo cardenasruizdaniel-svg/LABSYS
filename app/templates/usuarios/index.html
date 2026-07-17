@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block titulo %}Usuarios - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-person-gear"></i> Usuarios del sistema</h2>
+    <button class="btn btn-primary btn-sm" id="btnNuevoUsuario">
+        <i class="bi bi-plus-circle"></i> Nuevo usuario
+    </button>
+</div>
+
+<div id="alertaUsuarios"></div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Correo</th>
+                    <th>Roles</th>
+                    <th>App</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaUsuarios">
+                <tr><td colspan="8" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nuevo usuario -->
+<div class="modal fade" id="modalNuevoUsuario" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalUsuario"></div>
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo doc.</label>
+                        <select class="form-select" id="usrTipoDocumento">
+                            <option value="CC">CC</option>
+                            <option value="CE">CE</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Documento</label>
+                        <input class="form-control" id="usrDocumento">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Cargo</label>
+                        <input class="form-control" id="usrCargo" placeholder="ej. Bacterióloga, Recepción...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nombres</label>
+                        <input class="form-control" id="usrNombres">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Apellidos</label>
+                        <input class="form-control" id="usrApellidos">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="usrCorreo">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Celular</label>
+                        <input class="form-control" id="usrCelular">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Usuario (para ingresar)</label>
+                        <input class="form-control" id="usrUsuario">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contraseña inicial</label>
+                        <input type="text" class="form-control" id="usrPassword" placeholder="Se le pedirá cambiarla al ingresar">
+                    </div>
+                </div>
+
+                <hr>
+                <h6>Roles asignados</h6>
+                <div id="listaRolesCheckbox" class="row"></div>
+
+                <hr>
+                <h6>Acceso a app móvil</h6>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="usrAccesoMovil">
+                    <label class="form-check-label" for="usrAccesoMovil">Permitir acceso desde la aplicación móvil</label>
+                </div>
+                <small class="text-muted">Solo usuarios con acceso pueden usar la app en celular/tablet.</small>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarUsuario">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: resetear password -->
+<div class="modal fade" id="modalResetPassword" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Restablecer contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalReset"></div>
+                <input type="hidden" id="resetUsuarioId">
+                <label class="form-label">Nueva contraseña</label>
+                <input type="text" class="form-control" id="resetPasswordNueva">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-warning" id="btnConfirmarReset">Restablecer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/usuarios.js"></script>
+{% endblock %}

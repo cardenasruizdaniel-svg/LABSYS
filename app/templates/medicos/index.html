@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block titulo %}Profesionales (Médicos y Enfermeras) - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-person-badge"></i> Profesionales (Médicos y Enfermeras)</h2>
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" href="/medicos/plantilla/excel">
+            <i class="bi bi-download"></i> Plantilla Excel
+        </a>
+        <button class="btn btn-outline-primary btn-sm" id="btnImportarMedicos">
+            <i class="bi bi-file-earmark-excel"></i> Importar Excel
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnNuevoMedico">
+            <i class="bi bi-plus-circle"></i> Nuevo
+        </button>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link active" href="#" data-filtro="TODOS" onclick="filtrarTipo(event,'TODOS')">Todos</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-filtro="MEDICO" onclick="filtrarTipo(event,'MEDICO')">Médicos</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-filtro="ENFERMERO" onclick="filtrarTipo(event,'ENFERMERO')">Enfermeras/os</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-filtro="BACTERIOLOGO" onclick="filtrarTipo(event,'BACTERIOLOGO')">Bacteriólogos/as</a>
+    </li>
+</ul>
+
+<div id="alertaMedicos"></div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Registro</th>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Firma</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaMedicos">
+                <tr><td colspan="6" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nuevo médico/enfermera -->
+<div class="modal fade" id="modalNuevoMedico" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalMedico">Nuevo médico / enfermera</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalMedico"></div>
+                <input type="hidden" id="medicoId">
+
+                <label class="form-label d-block">Tipo</label>
+                <div class="form-check form-check-inline mb-3">
+                    <input class="form-check-input" type="radio" name="tipoProfesional" id="tipoMedico" value="MEDICO" checked>
+                    <label class="form-check-label" for="tipoMedico">Médico</label>
+                </div>
+                <div class="form-check form-check-inline mb-3">
+                    <input class="form-check-input" type="radio" name="tipoProfesional" id="tipoEnfermero" value="ENFERMERO">
+                    <label class="form-check-label" for="tipoEnfermero">Enfermero/a</label>
+                </div>
+                <div class="form-check form-check-inline mb-3">
+                    <input class="form-check-input" type="radio" name="tipoProfesional" id="tipoBacteriologo" value="BACTERIOLOGO">
+                    <label class="form-check-label" for="tipoBacteriologo">Bacteriólogo/a</label>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Registro (tarjeta profesional)</label>
+                    <input class="form-control" id="medicoRegistro">
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Nombres</label>
+                        <input class="form-control" id="medicoNombres">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Apellidos</label>
+                        <input class="form-control" id="medicoApellidos">
+                    </div>
+                </div>
+                <div class="mb-2 mt-2">
+                    <label class="form-label">Especialidad (opcional)</label>
+                    <input class="form-control" id="medicoEspecialidad">
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Teléfono</label>
+                        <input class="form-control" id="medicoTelefono">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="medicoCorreo">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarMedico">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: importar Excel -->
+<div class="modal fade" id="modalImportarMedicos" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Importar profesionales desde Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaImportarMedicos"></div>
+                <p class="text-muted small">
+                    El archivo debe ser un Excel (.xlsx) real con las columnas de la
+                    <a href="/medicos/plantilla/excel">plantilla</a> en la primera fila.
+                </p>
+                <input type="file" class="form-control" id="archivoImportarMedicos" accept=".xlsx">
+                <div id="resultadoImportarMedicos" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button class="btn btn-primary" id="btnSubirImportarMedicos">Importar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: subir firma -->
+<div class="modal fade" id="modalFirma" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Firma del profesional</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalFirma"></div>
+                <input type="hidden" id="firmaMedicoId">
+
+                <div class="text-center mb-3">
+                    <img id="previewFirma" src="" alt="Firma" style="max-height:100px; display:none;" class="border rounded p-2">
+                </div>
+
+                <ul class="nav nav-tabs mb-3" id="firmaTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabSubirFirma" type="button">
+                            <i class="bi bi-upload"></i> Subir archivo
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDibujarFirma" type="button">
+                            <i class="bi bi-pen"></i> Dibujar en pantalla
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tabSubirFirma">
+                        <label class="form-label">Imagen de la firma (.png, .jpg)</label>
+                        <input type="file" class="form-control" id="archivoFirma" accept=".png,.jpg,.jpeg">
+                        <div class="form-text">Esta firma aparecerá impresa en los resultados que este profesional valide.</div>
+                    </div>
+                    <div class="tab-pane fade" id="tabDibujarFirma">
+                        <div class="text-center">
+                            <canvas id="canvasFirma" width="460" height="180"
+                                style="border:2px solid #dee2e6;border-radius:8px;cursor:crosshair;touch-action:none;max-width:100%;background:#fff;">
+                            </canvas>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <button class="btn btn-outline-secondary btn-sm" id="btnLimpiarCanvas">
+                                <i class="bi bi-eraser"></i> Limpiar
+                            </button>
+                            <div class="form-text align-self-center">Firme con el mouse o dedo en el recuadro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button class="btn btn-primary" id="btnSubirFirma">Guardar firma</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/medicos.js"></script>
+{% endblock %}

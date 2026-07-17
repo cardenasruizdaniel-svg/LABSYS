@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block titulo %}Convenios - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-file-earmark-ruled"></i> Convenios</h2>
+    <button class="btn btn-primary btn-sm" id="btnNuevoConvenio">
+        <i class="bi bi-plus-circle"></i> Nuevo convenio
+    </button>
+</div>
+
+<p class="text-muted small">Un convenio define cómo se calcula el copago del paciente para cada EPS. Estos convenios son los que se eligen al crear una Orden.</p>
+
+<div id="alertaConvenios"></div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>EPS</th>
+                    <th>Copago</th>
+                    <th>Vigencia</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaConvenios">
+                <tr><td colspan="6" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nuevo / editar convenio -->
+<div class="modal fade" id="modalConvenio" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalConvenio">Nuevo convenio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalConvenio"></div>
+                <input type="hidden" id="convenioId">
+
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">EPS</label>
+                        <select class="form-select" id="convenioEps"><option value="">Seleccione...</option></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Código del convenio</label>
+                        <input class="form-control" id="convenioCodigo">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Nombre</label>
+                        <input class="form-control" id="convenioNombre">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha de inicio</label>
+                        <input type="date" class="form-control" id="convenioFechaInicio">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha de fin (opcional)</label>
+                        <input type="date" class="form-control" id="convenioFechaFin">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de copago</label>
+                        <select class="form-select" id="convenioTipoCopago">
+                            <option value="NINGUNO">Ninguno (EPS cubre 100%)</option>
+                            <option value="FIJO">Valor fijo por factura</option>
+                            <option value="PORCENTAJE">Porcentaje del total</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" id="labelValorCopago">Valor del copago</label>
+                        <input type="number" step="0.01" class="form-control" id="convenioValorCopago" value="0">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="convenioObservaciones" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarConvenio">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/convenios.js"></script>
+{% endblock %}

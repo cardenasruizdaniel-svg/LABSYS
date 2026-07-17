@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Iniciar sesión - LABSYS DIALIZAR</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <link href="/static/css/login.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="login-fondo">
+    <div class="login-tarjeta">
+
+        <div class="login-marca">
+            <img id="loginLogo" src="" alt="" style="display:none;height:130px;object-fit:contain;border-radius:12px;background:#fff;padding:8px;">
+            <h1 id="loginNombre">LABSYS DIALIZAR</h1>
+            <p>Sistema de gestión para laboratorio clínico</p>
+        </div>
+
+        <div id="alertaLogin"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" id="usuario" class="form-control" required autofocus>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-login w-100">
+                Ingresar <i class="bi bi-arrow-right-short"></i>
+            </button>
+        </form>
+
+        <p class="login-pie">LABSYS DIALIZAR &copy; 2026</p>
+    </div>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const boton = e.target.querySelector("button[type=submit]");
+    boton.disabled = true;
+
+    try {
+        const response = await fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                usuario: document.getElementById("usuario").value,
+                password: document.getElementById("password").value,
+            }),
+        });
+
+        if (response.ok) {
+            const rutaPorModulo = {
+                Dashboard: "/dashboard", Pacientes: "/pacientes", Profesionales: "/medicos",
+                Ordenes: "/ordenes", Examenes: "/examenes", EPS: "/eps", Convenios: "/convenios",
+                Agenda: "/agenda", Muestras: "/muestras", Procesamientos: "/procesamientos",
+                Validaciones: "/validaciones", Resultados: "/resultados", Facturacion: "/facturas",
+                Inventario: "/inventario", Reportes: "/reportes", Configuracion: "/configuracion-lab",
+                Usuarios: "/usuarios",
+            };
+
+            let destino = "/dashboard";
+            try {
+                const yo = await (await fetch("/auth/me")).json();
+                if (!yo.modulos.includes("Dashboard") && yo.modulos.length) {
+                    const primerModulo = yo.modulos.find(m => rutaPorModulo[m]);
+                    if (primerModulo) destino = rutaPorModulo[primerModulo];
+                } else if (!yo.modulos.length) {
+                    destino = "/sin-acceso";
+                }
+            } catch (_) {
+                // si algo falla, cae al /dashboard por defecto
+            }
+
+            window.location = destino;
+        } else {
+            document.getElementById("alertaLogin").innerHTML =
+                '<div class="alert alert-danger py-2">Usuario o contraseña incorrectos.</div>';
+            boton.disabled = false;
+        }
+    } catch (error) {
+        document.getElementById("alertaLogin").innerHTML =
+            '<div class="alert alert-danger py-2">No se pudo conectar con el servidor.</div>';
+        boton.disabled = false;
+    }
+});
+
+(async function () {
+    try {
+        const r = await fetch("/configuracion/");
+        if (!r.ok) return;
+        const cfg = await r.json();
+        if (cfg.logo_path) {
+            const img = document.getElementById("loginLogo");
+            img.src = "/static/" + cfg.logo_path;
+            img.style.display = "inline-block";
+        }
+        if (cfg.nombre_laboratorio) {
+            document.getElementById("loginNombre").textContent = cfg.nombre_laboratorio;
+        }
+    } catch (e) {}
+})();
+</script>
+
+</body>
+</html>

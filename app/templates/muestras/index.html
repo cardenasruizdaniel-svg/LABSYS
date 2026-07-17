@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block titulo %}Muestras - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-eyedropper"></i> Muestras</h2>
+    <button class="btn btn-primary btn-sm" id="btnNuevaMuestra">
+        <i class="bi bi-plus-circle"></i> Registrar muestra
+    </button>
+</div>
+
+<div id="alertaMuestras"></div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Código de barras</th>
+                    <th>Orden</th>
+                    <th>Tipo de muestra</th>
+                    <th>Enfermero/a</th>
+                    <th>Estado</th>
+                    <th>Fecha toma</th>
+                </tr>
+            </thead>
+            <tbody id="tablaMuestras">
+                <tr><td colspan="6" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nueva muestra -->
+<div class="modal fade" id="modalNuevaMuestra" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar muestra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalMuestra"></div>
+
+                <div class="mb-2">
+                    <label class="form-label">Orden</label>
+                    <select class="form-select" id="muestraOrden" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Código de barras</label>
+                    <input class="form-control" id="muestraCodigoBarras" placeholder="Se genera automáticamente si lo deja vacío">
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Tipo de muestra</label>
+                    <select class="form-select" id="muestraTipo">
+                        <option value="SANGRE">Sangre</option>
+                        <option value="ORINA">Orina</option>
+                        <option value="HECES">Heces</option>
+                        <option value="HISOPADO">Hisopado</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Recipiente (opcional)</label>
+                    <input class="form-control" id="muestraRecipiente" placeholder="ej. tubo tapa lila, frasco estéril...">
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Enfermero/a que toma la muestra</label>
+                    <select class="form-select" id="muestraEnfermera">
+                        <option value="">Sin especificar</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarMuestra">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/muestras.js"></script>
+{% endblock %}

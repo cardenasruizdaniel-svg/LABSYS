@@ -1,0 +1,310 @@
+/* ==========================================================
+   LABSYS DIALIZAR — Procesar y Validar Muestras
+   ========================================================== */
+
+/* --- Tarjetas de orden --- */
+
+.orden-card {
+    border: 1px solid var(--borde-suave);
+    border-radius: var(--radio);
+    background: #fff;
+    margin-bottom: 12px;
+    transition: .15s ease;
+    overflow: hidden;
+}
+
+.orden-card:hover {
+    box-shadow: var(--sombra-hover);
+    transform: translateY(-1px);
+}
+
+.orden-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--borde-suave);
+    background: #fafbfc;
+}
+
+.orden-card-header .orden-numero {
+    font-weight: 700;
+    color: var(--azul-oscuro);
+    font-size: .95rem;
+}
+
+.orden-card-header .orden-fecha {
+    font-size: .8rem;
+    color: var(--texto-suave);
+}
+
+.orden-card-body {
+    padding: 12px 16px;
+}
+
+.orden-paciente {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--texto);
+}
+
+.orden-detalle {
+    font-size: .85rem;
+    color: var(--texto-suave);
+    margin-top: 2px;
+}
+
+.orden-examenes {
+    margin-top: 6px;
+}
+
+.orden-examenes .badge {
+    font-weight: 500;
+    font-size: .72rem;
+}
+
+/* --- Pasos del workflow --- */
+
+.workflow-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--borde-suave);
+}
+
+.workflow-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    white-space: nowrap;
+}
+
+.workflow-step .step-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    background: #e9ecef;
+    color: var(--texto-suave);
+    transition: .2s;
+}
+
+.workflow-step.active .step-icon {
+    background: var(--azul-primario);
+    color: #fff;
+}
+
+.workflow-step.done .step-icon {
+    background: #198754;
+    color: #fff;
+}
+
+.workflow-step.active {
+    color: var(--azul-primario);
+}
+
+.workflow-step.done {
+    color: #198754;
+}
+
+.workflow-arrow {
+    margin: 0 8px;
+    color: #ccc;
+    font-size: .7rem;
+}
+
+/* --- Botones de accion --- */
+
+.btn-tomar-muestra {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-tomar-muestra:hover {
+    background: linear-gradient(135deg, #c82333, #a71d2a);
+    color: #fff;
+}
+
+.btn-procesar {
+    background: linear-gradient(135deg, #fd7e14, #e8590c);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-procesar:hover {
+    background: linear-gradient(135deg, #e8590c, #c9540a);
+    color: #fff;
+}
+
+.btn-validar {
+    background: linear-gradient(135deg, #198754, #157347);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-validar:hover {
+    background: linear-gradient(135deg, #157347, #0f5132);
+    color: #fff;
+}
+
+/* --- Info orden en modales --- */
+
+.info-orden {
+    background: #f0f4f8;
+    border: 1px solid var(--borde-suave);
+}
+
+/* --- Formulario de parametros pre-disenados --- */
+
+.parametro-grupo {
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid var(--borde-suave);
+    border-radius: 8px;
+    background: #fafbfc;
+}
+
+.parametro-grupo h6 {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--azul-oscuro);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--azul-primario);
+}
+
+.parametro-fila {
+    display: grid;
+    grid-template-columns: 1fr 120px 70px 100px 40px;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: .85rem;
+}
+
+.parametro-fila:last-child {
+    border-bottom: none;
+}
+
+.parametro-fila .param-nombre {
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.parametro-fila .param-referencia {
+    font-size: .75rem;
+    color: var(--texto-suave);
+    text-align: center;
+}
+
+.parametro-fila .param-estado {
+    text-align: center;
+    font-size: .85rem;
+}
+
+.parametro-fila input,
+.parametro-fila select {
+    font-size: .85rem;
+    padding: 4px 8px;
+}
+
+.valor-fuera-rango {
+    border-color: #dc3545 !important;
+    background: #fff5f5 !important;
+}
+
+.valor-critico {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+/* --- Estados en cards --- */
+
+.estado-badge {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.estado-PENDIENTE {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.estado-MUESTRA {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.estado-PROCESANDO {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.estado-VALIDADO {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+/* Nuevos estados per-examen */
+.estado-SIN_MUESTRA,
+.estado-PENDIENTE {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.estado-MUESTRA_TOMADA,
+.estado-MUESTRA {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.estado-EN_PROCESO,
+.estado-PROCESANDO {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.estado-PROCESADO {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.estado-POR_VALIDAR {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 768px) {
+    .parametro-fila {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .workflow-steps {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .orden-card-header {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+    }
+}

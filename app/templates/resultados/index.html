@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Resultados - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<h2 class="mb-3"><i class="bi bi-clipboard2-pulse"></i> Resultados por orden</h2>
+
+<div id="alertaResultados"></div>
+
+<div id="avisoPendientes"></div>
+
+<div id="listaOrdenesResultados">
+    <div class="text-muted small">Cargando...</div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/resultados.js"></script>
+{% endblock %}

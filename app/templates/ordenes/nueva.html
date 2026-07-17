@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block titulo %}Órdenes de Laboratorio - LABSYS DIALIZAR{% endblock %}
+
+{% block css %}
+<style>
+.paciente-typeahead { position: relative; flex: 1; min-width: 0; }
+.paciente-typeahead input.form-control { width: 100%; }
+.paciente-typeahead .typeahead-list {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 .375rem .375rem;
+    max-height: 280px;
+    overflow-y: auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+.paciente-typeahead .typeahead-list.active { display: block; }
+.typeahead-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.typeahead-item.active-item,
+.typeahead-item:hover { background: #e9f1fb; }
+.typeahead-item .nombre { font-weight: 500; }
+.typeahead-item .documento { font-family: monospace; font-size: 12px; color: #495057; }
+.typeahead-empty { padding: 12px; text-align: center; color: #6c757d; font-size: 13px; }
+.orden-paciente-group { overflow: visible; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-file-earmark-medical"></i> Órdenes de Laboratorio</h2>
+    <div class="d-flex gap-2 align-items-center">
+        <span class="badge bg-info text-dark fs-6" id="contadorHoy">
+            <i class="bi bi-calendar-check"></i> Órdenes hoy: <span id="numHoy">0</span>
+        </span>
+        <button class="btn btn-primary btn-sm" id="btnNuevaOrden">
+            <i class="bi bi-plus-circle"></i> Nueva orden
+        </button>
+    </div>
+</div>
+
+<div id="alertaOrdenes"></div>
+
+<!-- Filtro de fecha -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <label class="form-label mb-0 fw-bold">Ver órdenes del:</label>
+                <input type="date" class="form-control form-control-sm" id="filtroFecha" style="width:auto">
+            </div>
+            <button class="btn btn-outline-primary btn-sm" id="btnVerHoy">
+                <i class="bi bi-calendar-event"></i> Hoy
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="btnImprimirDia">
+                <i class="bi bi-printer"></i> Imprimir del día
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="btnImprimirSeleccion">
+                <i class="bi bi-printer"></i> Imprimir seleccionadas
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de órdenes -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div id="tituloFecha" class="mb-2 fw-bold text-primary"></div>
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th width="30"><input type="checkbox" id="checkAll"></th>
+                    <th>N.° Orden</th>
+                    <th>N.° Día</th>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaOrdenes">
+                <tr><td colspan="8" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nueva orden -->
+<div class="modal fade" id="modalNuevaOrden" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva orden médica</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalOrden"></div>
+
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label">N.° de orden</label>
+                        <input class="form-control" id="ordenNumero" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Orden del día N.°</label>
+                        <input class="form-control" id="ordenConsecutivo" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Prioridad</label>
+                        <select class="form-select" id="ordenPrioridad">
+                            <option value="NORMAL" selected>Normal</option>
+                            <option value="URGENTE">Urgente</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label">Paciente</label>
+                        <div class="input-group orden-paciente-group">
+                            <div class="paciente-typeahead" id="pacienteTypeahead">
+                                <input type="text" class="form-control" id="buscarPaciente"
+                                       placeholder="Buscar por nombre o cedula..." autocomplete="off">
+                                <input type="hidden" id="ordenPaciente" value="">
+                                <div class="typeahead-list" id="listaPacientes"></div>
+                            </div>
+                            <button class="btn btn-outline-success" type="button" id="btnNuevoPaciente"
+                                    title="Crear paciente nuevo">
+                                <i class="bi bi-person-plus"></i> Nuevo
+                            </button>
+                        </div>
+                        <div class="form-text" id="pacienteSeleccionado" style="display:none">
+                            <i class="bi bi-check-circle-fill text-success"></i> <span id="pacienteSeleccionadoNombre"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Médico solicitante</label>
+                        <select class="form-select" id="ordenMedico" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">EPS</label>
+                        <select class="form-select" id="ordenEps" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Convenio</label>
+                        <select class="form-select" id="ordenConvenio" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="ordenObservaciones" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <hr>
+                <h6>Exámenes solicitados</h6>
+                <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="buscarExamen"
+                           placeholder="Buscar examen por nombre o código...">
+                    <button class="btn btn-outline-secondary" type="button" id="btnLimpiarBusqueda"
+                            title="Limpiar búsqueda">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div id="listaExamenesCheckbox" style="max-height:300px;overflow-y:auto;">
+                    <div class="text-muted small">Cargando catálogo de exámenes...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarOrden">
+                    <i class="bi bi-check-circle"></i> Guardar orden
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: crear paciente rápido -->
+<div class="modal fade" id="modalNuevoPaciente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus"></i> Crear paciente rápido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaNuevoPaciente"></div>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo documento</label>
+                        <select class="form-select" id="npTipoDoc">
+                            <option value="CC" selected>Cédula</option>
+                            <option value="TI">Tarjeta identidad</option>
+                            <option value="CE">Cédula extranjería</option>
+                            <option value="RC">Registro civil</option>
+                            <option value="MS">Menor sin ID</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Número de documento *</label>
+                        <input class="form-control" id="npDocumento" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Primer nombre *</label>
+                        <input class="form-control" id="npPrimerNombre" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Segundo nombre</label>
+                        <input class="form-control" id="npSegundoNombre">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Primer apellido *</label>
+                        <input class="form-control" id="npPrimerApellido" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Segundo apellido</label>
+                        <input class="form-control" id="npSegundoApellido">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha de nacimiento *</label>
+                        <input type="date" class="form-control" id="npFechaNacimiento" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sexo *</label>
+                        <select class="form-select" id="npSexo">
+                            <option value="">Seleccione...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input class="form-control" id="npTelefono">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Dirección</label>
+                        <input class="form-control" id="npDireccion">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-success" id="btnGuardarPaciente">
+                    <i class="bi bi-check-circle"></i> Crear paciente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: ver exámenes de una orden -->
+<div class="modal fade" id="modalVerExamenes" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Exámenes de la orden</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoVerExamenes">Cargando...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Plantilla oculta para impresión de sticker (se clona dinámicamente) -->
+<div id="stickerTemplate" style="display:none">
+    <div class="sticker" style="width:60mm;height:40mm;border:1px solid #000;padding:3mm;font-family:Arial,sans-serif;font-size:9pt;page-break-after:always;overflow:hidden;">
+        <div style="text-align:center;font-weight:bold;font-size:8pt;border-bottom:1px solid #000;padding-bottom:1mm;margin-bottom:1mm;">
+            LABSYS DIALIZAR — Laboratorio Clínico
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+            <div>
+                <div><strong>Orden:</strong> <span class="stk-orden"></span></div>
+                <div><strong>Paciente:</strong> <span class="stk-paciente"></span></div>
+                <div><strong>Doc:</strong> <span class="stk-documento"></span></div>
+            </div>
+            <div style="text-align:right;">
+                <div><strong>Día:</strong> <span class="stk-consecutivo"></span></div>
+                <div><strong>Fecha:</strong> <span class="stk-fecha"></span></div>
+                <div><strong>Prioridad:</strong> <span class="stk-prioridad"></span></div>
+            </div>
+        </div>
+        <div style="margin-top:1mm;border-top:1px dashed #000;padding-top:1mm;">
+            <strong>Exámenes:</strong> <span class="stk-examenes" style="font-size:8pt;"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Plantilla oculta para impresión de formato de orden (se clona dinámicamente) -->
+<div id="ordenTemplate" style="display:none">
+    <div class="orden-formato" style="width:210mm;min-height:120mm;border:1px solid #000;padding:10mm;font-family:Arial,sans-serif;font-size:10pt;page-break-after:always;">
+        <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:3mm;margin-bottom:5mm;">
+            <div style="font-size:14pt;font-weight:bold;">LABSYS DIALIZAR</div>
+            <div style="font-size:9pt;color:#555;">Laboratorio Clínico · Sistema de Gestión Integral</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5mm;">
+            <div>
+                <strong>Orden N.°:</strong> <span class="ord-numero"></span><br>
+                <strong>Consecutivo del día:</strong> <span class="ord-consecutivo"></span><br>
+                <strong>Fecha:</strong> <span class="ord-fecha"></span>
+            </div>
+            <div style="text-align:right;">
+                <strong>Prioridad:</strong> <span class="ord-prioridad"></span><br>
+                <strong>Estado:</strong> <span class="ord-estado"></span>
+            </div>
+        </div>
+        <div style="border:1px solid #ccc;padding:3mm;margin-bottom:4mm;">
+            <strong>Datos del paciente</strong>
+            <div style="display:flex;gap:5mm;">
+                <div>Nombre: <span class="ord-paciente-nombre"></span></div>
+                <div>Documento: <span class="ord-paciente-doc"></span></div>
+            </div>
+        </div>
+        <div style="border:1px solid #ccc;padding:3mm;margin-bottom:4mm;">
+            <strong>Médico solicitante:</strong> <span class="ord-medico"></span>
+        </div>
+        <div style="border:1px solid #ccc;padding:3mm;margin-bottom:4mm;">
+            <strong>EPS / Convenio:</strong> <span class="ord-eps-convenio"></span>
+        </div>
+        <div style="margin-bottom:4mm;">
+            <strong>Exámenes solicitados:</strong>
+            <table style="width:100%;border-collapse:collapse;margin-top:2mm;">
+                <thead>
+                    <tr style="border-bottom:1px solid #000;">
+                        <th style="text-align:left;padding:1mm;">Código</th>
+                        <th style="text-align:left;padding:1mm;">Examen</th>
+                        <th style="text-align:left;padding:1mm;">Categoría</th>
+                        <th style="text-align:right;padding:1mm;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody class="ord-examenes-body"></tbody>
+            </table>
+        </div>
+        <div style="border-top:1px solid #ccc;padding-top:2mm;">
+            <strong>Observaciones:</strong> <span class="ord-observaciones">Ninguna</span>
+        </div>
+        <div style="margin-top:10mm;display:flex;justify-content:space-between;">
+            <div style="text-align:center;width:40%;border-top:1px solid #000;padding-top:2mm;">
+                Firma del médico
+            </div>
+            <div style="text-align:center;width:40%;border-top:1px solid #000;padding-top:2mm;">
+                Recibido por laboratorio
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/ordenes.js"></script>
+{% endblock %}

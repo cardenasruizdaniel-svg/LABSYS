@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block titulo %}Dashboard - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard Ejecutivo</h2>
+    <button class="btn btn-outline-primary btn-sm" id="btnActualizarDashboard">
+        <i class="bi bi-arrow-clockwise"></i> Actualizar
+    </button>
+</div>
+
+<!-- KPIs PRINCIPALES -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-lg-2 col-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="text-primary mb-1"><i class="bi bi-people-fill fs-3"></i></div>
+                <div class="text-muted small">Pacientes</div>
+                <div class="fs-3 fw-bold" id="kpiPacientes">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2 col-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="text-success mb-1"><i class="bi bi-clipboard-data fs-3"></i></div>
+                <div class="text-muted small">Órdenes hoy</div>
+                <div class="fs-3 fw-bold"><span id="kpiOrdenesHoy">0</span> <small class="text-muted fs-6">/ <span id="kpiOrdenesMes">0</span> mes</small></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2 col-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="text-info mb-1"><i class="bi bi-cash-stack fs-3"></i></div>
+                <div class="text-muted small">Facturado hoy</div>
+                <div class="fs-4 fw-bold" id="kpiFacturadoHoy">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2 col-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="text-primary mb-1"><i class="bi bi-graph-up fs-3"></i></div>
+                <div class="text-muted small">Facturado mes</div>
+                <div class="fs-4 fw-bold" id="kpiFacturadoMes">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2 col-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="text-warning mb-1"><i class="bi bi-exclamation-triangle fs-3"></i></div>
+                <div class="text-muted small">Copagos pendientes</div>
+                <div class="fs-4 fw-bold" id="kpiCopagosPendientes">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2 col-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="text-danger mb-1"><i class="bi bi-box-seam fs-3"></i></div>
+                <div class="text-muted small">Inventario bajo</div>
+                <div class="fs-3 fw-bold" id="kpiInventarioBajo">-</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INGRESOS Y FINANZAS -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-bar-chart-line"></i> Ingresos vs Gastos (30 días)</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartIngresosGastos" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-pie-chart"></i> Gastos por categoría</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartGastosCategoria" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CAJA -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="text-muted small">Estado de caja</div>
+                <div id="kpiCajaEstado" class="fs-5 fw-bold">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="text-muted small">Monto inicial</div>
+                <div class="fs-5 fw-bold" id="kpiCajaMontoInicial">-</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="text-muted small">Cierre</div>
+                <div class="fs-5 fw-bold" id="kpiCajaCierre">-</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OPERACIONES DEL LABORATORIO -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-kanban"></i> Pipeline de órdenes hoy</strong>
+                <span class="badge bg-primary float-end" id="kpiOrdenesHoyTotal">0</span>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="text-center flex-fill mx-1">
+                        <div class="rounded bg-secondary bg-opacity-10 py-3 px-2">
+                            <div class="fw-bold fs-4 text-secondary" id="kpiOrdRegistradas">0</div>
+                            <div class="text-muted small">Registradas</div>
+                        </div>
+                    </div>
+                    <div class="text-center align-self-center"><i class="bi bi-arrow-right text-muted"></i></div>
+                    <div class="text-center flex-fill mx-1">
+                        <div class="rounded bg-info bg-opacity-10 py-3 px-2">
+                            <div class="fw-bold fs-4 text-info" id="kpiOrdMuestra">0</div>
+                            <div class="text-muted small">En muestra</div>
+                        </div>
+                    </div>
+                    <div class="text-center align-self-center"><i class="bi bi-arrow-right text-muted"></i></div>
+                    <div class="text-center flex-fill mx-1">
+                        <div class="rounded bg-warning bg-opacity-10 py-3 px-2">
+                            <div class="fw-bold fs-4 text-warning" id="kpiOrdProcesamiento">0</div>
+                            <div class="text-muted small">Procesando</div>
+                        </div>
+                    </div>
+                    <div class="text-center align-self-center"><i class="bi bi-arrow-right text-muted"></i></div>
+                    <div class="text-center flex-fill mx-1">
+                        <div class="rounded bg-success bg-opacity-10 py-3 px-2">
+                            <div class="fw-bold fs-4 text-success" id="kpiOrdValidadas">0</div>
+                            <div class="text-muted small">Validadas</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="sticky-top bg-white">
+                            <tr><th>#</th><th>Orden</th><th>Paciente</th><th>Prioridad</th><th>Estado</th></tr>
+                        </thead>
+                        <tbody id="tablaOrdenesHoy">
+                            <tr><td colspan="5" class="text-muted">Sin órdenes hoy.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-calendar-week"></i> Órdenes por día (7 días)</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartOrdenesDia" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-file-medical"></i> Exámenes más solicitados</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartExamenesTop" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-person-badge"></i> Médicos referenciadores</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartMedicosTop" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ANÁLISIS DE PACIENTES -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-person-plus"></i> Pacientes nuevos por mes</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartPacientesMes" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-shield-check"></i> Pacientes por EPS</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartPacientesEPS" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INVENTARIO -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-boxes"></i> Stock por categoría</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="chartInventarioCategoria" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-exclamation-diamond"></i> Items con stock bajo</strong>
+            </div>
+            <div class="card-body">
+                <div style="max-height: 220px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="sticky-top bg-white">
+                            <tr><th>Item</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Proveedor</th></tr>
+                        </thead>
+                        <tbody id="tablaStockBajo">
+                            <tr><td colspan="5" class="text-muted">Sin items con stock bajo.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ALERTAS Y ACTIVIDAD -->
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-bell"></i> Alertas</strong>
+            </div>
+            <div class="card-body" id="listaAlertas">
+                <div class="text-muted small">Cargando...</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <strong><i class="bi bi-clock-history"></i> Actividad reciente</strong>
+            </div>
+            <div class="card-body">
+                <div style="max-height: 280px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="sticky-top bg-white">
+                            <tr><th>Fecha</th><th>Módulo</th><th>Descripción</th></tr>
+                        </thead>
+                        <tbody id="tablaActividad">
+                            <tr><td colspan="3" class="text-muted small">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block css %}
+<style>
+    .card { border-radius: 12px !important; }
+    .card-header { border-radius: 12px 12px 0 0 !important; }
+</style>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

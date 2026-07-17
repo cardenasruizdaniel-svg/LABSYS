@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block titulo %}Procesar y Validar - LABSYS DIALIZAR{% endblock %}
+
+{% block css %}
+<link href="/static/css/procesar_validar.css" rel="stylesheet">
+{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi bi-gear-wide-connected"></i> Procesar y Validar Muestras</h2>
+    <div class="d-flex gap-2 align-items-center">
+        <span class="badge bg-success fs-6" id="statCompletadas">0 validadas</span>
+        <span class="badge bg-warning text-dark fs-6" id="statPendientes">0 pendientes</span>
+    </div>
+</div>
+
+<div id="alertaProcesarValidar"></div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" id="filtroBusqueda"
+                       placeholder="Buscar por paciente o # orden...">
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control form-control-sm" id="filtroFecha">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" id="filtroEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="SIN_MUESTRA">Sin muestra</option>
+                    <option value="MUESTRA_TOMADA">Muestra tomada</option>
+                    <option value="EN_PROCESO">En proceso</option>
+                    <option value="PROCESADO">Procesado</option>
+                    <option value="POR_VALIDAR">Por validar</option>
+                    <option value="VALIDADO">Validado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-outline-secondary w-100" id="btnLimpiarFiltros">
+                    <i class="bi bi-x-circle"></i> Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de ordenes -->
+<div id="listaOrdenes">
+    <div class="text-center py-5 text-muted">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Cargando órdenes...</p>
+    </div>
+</div>
+
+<!-- Modal: Tomar Muestra -->
+<div class="modal fade" id="modalTomarMuestra" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-eyedropper"></i> Tomar Muestra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaTomarMuestra"></div>
+
+                <div class="info-orden p-2 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="small text-muted">Orden</div>
+                            <strong id="tmNumeroOrden">-</strong>
+                            <div class="small" id="tmPaciente">-</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="small text-muted">N.° exámenes</div>
+                            <strong id="tmCantidadExamenes">0</strong>
+                        </div>
+                        <div class="col-3">
+                            <div class="small text-muted">Tipo muestra</div>
+                            <span id="tmTiposMuestra">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tmTablaExamenes" class="mb-3"></div>
+
+                <div class="mb-2">
+                    <label class="form-label"><strong>Enfermero/a responsable de la toma</strong></label>
+                    <select class="form-select" id="tmEnfermera">
+                        <option value="">Sin especificar</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarMuestra">
+                    <i class="bi bi-check-circle"></i> Guardar y Procesar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Procesar -->
+<div class="modal fade" id="modalProcesar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cpu"></i> Procesar Muestra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaProcesar"></div>
+
+                <div class="info-orden p-2 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="small text-muted">Muestra</div>
+                            <strong id="prCodigoBarras">-</strong>
+                            <div class="small" id="prTipoMuestra">-</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted">N.° exámenes</div>
+                            <strong id="prCantidadExamenes">0</strong>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted">Estado</div>
+                            <span class="badge bg-primary">En proceso</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="prTablaExamenes" class="mb-3"></div>
+
+                <div class="mb-2">
+                    <label class="form-label">Analizador / equipo utilizado</label>
+                    <input class="form-control" id="prAnalizador" placeholder="ej. Mindray BS-240">
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Profesional que procesa</label>
+                    <select class="form-select" id="prProfesional">
+                        <option value="">Sin especificar</option>
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Observaciones del procesamiento</label>
+                    <textarea class="form-control" id="prObservaciones" rows="2" placeholder="Notas sobre el procesamiento..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarProcesamiento">
+                    <i class="bi bi-play-circle"></i> Iniciar Procesamiento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Validar (formulario pre-disenado) -->
+<div class="modal fade" id="modalValidar" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Validar Resultado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaValidar"></div>
+
+                <div class="info-orden p-2 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="small text-muted">Paciente</div>
+                            <strong id="vdPaciente">-</strong>
+                        </div>
+                        <div class="col-3">
+                            <div class="small text-muted">Muestra</div>
+                            <span id="vdMuestra">-</span>
+                        </div>
+                        <div class="col-3">
+                            <div class="small text-muted">Analizador</div>
+                            <span id="vdAnalizador">-</span>
+                        </div>
+                        <div class="col-2">
+                            <div class="small text-muted">Firma validador</div>
+                            <img id="vdFirmaPreview" src="" alt="" style="max-height:40px;display:none;" class="border rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario pre-disenado dinamico -->
+                <div id="formParametros">
+                    <div class="text-muted small">Cargando parámetros del examen...</div>
+                </div>
+
+                <hr>
+
+                <div class="mb-2">
+                    <label class="form-label">Observaciones generales de validación</label>
+                    <textarea class="form-control" id="vdObservaciones" rows="2" placeholder="Observaciones generales..."></textarea>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Validado por</label>
+                    <select class="form-select" id="vdValidador">
+                        <option value="">Seleccione un bacteriólogo/a...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm" id="vdModoImpresion" style="width:auto;">
+                        <option value="general">General (todo junto)</option>
+                        <option value="especifico">Por examen (hoja aparte)</option>
+                    </select>
+                    <button class="btn btn-outline-primary" id="btnImprimirResultados" onclick="pv.imprimirResultados()">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </button>
+                </div>
+                <button class="btn btn-success" id="btnConfirmarValidar">
+                    <i class="bi bi-check2"></i> Guardar y Validar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/procesar_validar.js"></script>
+{% endblock %}

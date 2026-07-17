@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inventario - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-box-seam"></i> Inventario</h2>
+    <div>
+        <button class="btn btn-outline-danger btn-sm" id="btnCierreMes">
+            <i class="bi bi-archive"></i> Cierre de mes
+        </button>
+        <button class="btn btn-outline-primary btn-sm" id="btnNuevoMovimiento">
+            <i class="bi bi-arrow-left-right"></i> Registrar movimiento
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnNuevoItem">
+            <i class="bi bi-plus-circle"></i> Nuevo ítem
+        </button>
+    </div>
+</div>
+
+<div id="alertaInventario"></div>
+<div id="alertaStockBajo"></div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Stock actual</th>
+                    <th>Stock mínimo</th>
+                    <th>Vencimiento</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaItems">
+                <tr><td colspan="7" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nuevo item -->
+<div class="modal fade" id="modalNuevoItem" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo ítem de inventario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalItem"></div>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Código</label><input class="form-control" id="itemCodigo"></div>
+                    <div class="col-6">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" id="itemCategoria">
+                            <option value="REACTIVO">Reactivo</option>
+                            <option value="INSUMO" selected>Insumo médico</option>
+                            <option value="PAPELERIA">Papelería</option>
+                            <option value="ASEO">Aseo</option>
+                            <option value="UTENSILIO">Utensilio</option>
+                            <option value="EQUIPO">Equipo</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-12"><label class="form-label">Nombre</label><input class="form-control" id="itemNombre"></div>
+                    <div class="col-4"><label class="form-label">Unidad de medida</label><input class="form-control" id="itemUnidad" placeholder="ej. mL, unidades"></div>
+                    <div class="col-4"><label class="form-label">Stock inicial</label><input type="number" class="form-control" id="itemStockInicial" value="0"></div>
+                    <div class="col-4"><label class="form-label">Stock mínimo</label><input type="number" class="form-control" id="itemStockMinimo" value="0"></div>
+                    <div class="col-6"><label class="form-label">Proveedor</label><input class="form-control" id="itemProveedor"></div>
+                    <div class="col-6"><label class="form-label">Vence (opcional)</label><input type="date" class="form-control" id="itemVencimiento"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarItem">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: movimiento -->
+<div class="modal fade" id="modalMovimiento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar movimiento de inventario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalMovimiento"></div>
+                <div class="mb-2">
+                    <label class="form-label">Ítem</label>
+                    <select class="form-select" id="movItem"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Tipo de movimiento</label>
+                    <select class="form-select" id="movTipo">
+                        <option value="ENTRADA">Entrada (compra, recepción)</option>
+                        <option value="SALIDA">Salida (uso, consumo)</option>
+                        <option value="AJUSTE">Ajuste (conteo físico)</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label" id="labelCantidad">Cantidad</label>
+                    <input type="number" class="form-control" id="movCantidad">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Motivo</label>
+                    <input class="form-control" id="movMotivo" placeholder="ej. Compra proveedor X, Uso en procesamiento...">
+                </div>
+                <div class="mb-2" id="grupoCostoMovimiento" style="display:none;">
+                    <label class="form-label">Costo total de la compra (opcional)</label>
+                    <input type="number" step="0.01" class="form-control" id="movCosto" placeholder="Valor pagado en esta compra">
+                    <div class="form-text">Si lo llena, esta compra se descuenta del reporte de Caja en Facturación.</div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Responsable (opcional)</label>
+                    <input class="form-control" id="movResponsable">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarMovimiento">Registrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: cierre de mes -->
+<div class="modal fade" id="modalCierreMes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-archive"></i> Cierre de mes — Archivar movimientos de inventario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaCierreMes"></div>
+                <p class="text-muted small">
+                    Esto mueve a un archivo Excel todos los movimientos de inventario
+                    (entradas/salidas/ajustes) de <strong>meses anteriores</strong> al actual,
+                    y los borra de la base de datos activa para mantener el sistema liviano.
+                    El stock actual de cada ítem <strong>no se ve afectado</strong> — sigue
+                    siendo el mismo, esto solo archiva el historial ya usado.
+                </p>
+                <button class="btn btn-danger btn-sm" id="btnConfirmarCierreMes">
+                    <i class="bi bi-archive"></i> Ejecutar cierre de mes ahora
+                </button>
+
+                <hr>
+                <h6>Cierres anteriores (para consultar)</h6>
+                <table class="table table-sm">
+                    <thead><tr><th>Archivo</th><th>Generado</th><th>Tamaño</th><th></th></tr></thead>
+                    <tbody id="tablaCierres">
+                        <tr><td colspan="4" class="text-muted small">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/inventario.js"></script>
+{% endblock %}

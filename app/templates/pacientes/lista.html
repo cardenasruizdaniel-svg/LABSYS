@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block titulo %}Pacientes - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-people-fill"></i> Pacientes</h2>
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" href="/pacientes/plantilla/excel">
+            <i class="bi bi-download"></i> Plantilla Excel
+        </a>
+        <button class="btn btn-outline-primary btn-sm" id="btnImportarPacientes">
+            <i class="bi bi-file-earmark-excel"></i> Importar Excel
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnNuevoPaciente">
+            <i class="bi bi-plus-circle"></i> Nuevo paciente
+        </button>
+    </div>
+</div>
+
+<div id="alertaPacientes"></div>
+
+<input type="text" class="form-control mb-3" id="buscarPaciente" placeholder="Buscar por nombre o documento...">
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Nombre</th>
+                    <th>Edad</th>
+                    <th>Sexo</th>
+                    <th>Afiliación</th>
+                    <th>Celular</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaPacientes">
+                <tr><td colspan="7" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nuevo / editar paciente -->
+<div class="modal fade" id="modalPaciente" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalPaciente">Nuevo paciente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalPaciente"></div>
+                <input type="hidden" id="pacienteId">
+
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo doc.</label>
+                        <select class="form-select" id="pacienteTipoDocumento">
+                            <option value="CC">CC</option>
+                            <option value="TI">TI</option>
+                            <option value="CE">CE</option>
+                            <option value="PA">Pasaporte</option>
+                            <option value="RC">Registro civil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Documento</label>
+                        <input class="form-control" id="pacienteDocumento">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Sexo</label>
+                        <select class="form-select" id="pacienteSexo">
+                            <option value="Femenino">Femenino</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Primer nombre</label>
+                        <input class="form-control" id="pacientePrimerNombre">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Segundo nombre</label>
+                        <input class="form-control" id="pacienteSegundoNombre">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Primer apellido</label>
+                        <input class="form-control" id="pacientePrimerApellido">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Segundo apellido</label>
+                        <input class="form-control" id="pacienteSegundoApellido">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha de nacimiento</label>
+                        <input type="date" class="form-control" id="pacienteFechaNacimiento">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Teléfono</label>
+                        <input class="form-control" id="pacienteTelefono">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Celular</label>
+                        <input class="form-control" id="pacienteCelular">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="pacienteCorreo">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Dirección</label>
+                        <input class="form-control" id="pacienteDireccion">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Departamento</label>
+                        <select class="form-select" id="pacienteDepartamento">
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ciudad / Municipio</label>
+                        <select class="form-select" id="pacienteMunicipio">
+                            <option value="">Seleccione un departamento primero</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr>
+                <h6>Afiliación</h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="pacienteAfiliacion" id="afiliacionEps" value="EPS" checked>
+                            <label class="form-check-label" for="afiliacionEps">Tiene EPS</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="pacienteAfiliacion" id="afiliacionParticular" value="PARTICULAR">
+                            <label class="form-check-label" for="afiliacionParticular">Particular (paga directo)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="grupoPacienteEps">
+                        <label class="form-label">EPS</label>
+                        <select class="form-select" id="pacienteEps">
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="pacienteTieneCopago" checked>
+                            <label class="form-check-label" for="pacienteTieneCopago">
+                                Este paciente debe pagar copago
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarPaciente">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: importar Excel -->
+<div class="modal fade" id="modalImportarPacientes" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Importar pacientes desde Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaImportarPacientes"></div>
+                <p class="text-muted small">
+                    El archivo debe ser un Excel (.xlsx) real con las columnas de la
+                    <a href="/pacientes/plantilla/excel">plantilla</a> en la primera fila.
+                </p>
+                <input type="file" class="form-control" id="archivoImportarPacientes" accept=".xlsx">
+                <div id="resultadoImportarPacientes" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button class="btn btn-primary" id="btnSubirImportarPacientes">Importar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/pacientes.js"></script>
+{% endblock %}

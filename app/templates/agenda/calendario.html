@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block titulo %}Agenda - LABSYS DIALIZAR{% endblock %}
+
+{% block css %}
+<link href="/static/css/agenda.css" rel="stylesheet">
+{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-calendar3"></i> Agenda de citas</h2>
+    <div>
+        <button class="btn btn-outline-secondary btn-sm" id="btnConfigurarCupo">
+            <i class="bi bi-sliders"></i> Configurar cupo del día
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnNuevaCita">
+            <i class="bi bi-plus-circle"></i> Nueva cita
+        </button>
+    </div>
+</div>
+
+<div id="alertaAgenda"></div>
+
+<div class="row g-3">
+
+    <!-- Calendario -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                <button class="btn btn-sm btn-light" id="btnMesAnterior"><i class="bi bi-chevron-left"></i></button>
+                <h5 class="mb-0" id="tituloMes">-</h5>
+                <button class="btn btn-sm btn-light" id="btnMesSiguiente"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="card-body">
+                <div class="calendario-grid calendario-cabecera">
+                    <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+                </div>
+                <div class="calendario-grid" id="calendarioBody"></div>
+
+                <div class="d-flex gap-3 mt-3 small text-muted">
+                    <span><span class="dot dot-verde"></span> Con cupo</span>
+                    <span><span class="dot dot-amarillo"></span> Cupo limitado</span>
+                    <span><span class="dot dot-rojo"></span> Sin cupo</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel del día seleccionado -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <strong id="tituloDiaSeleccionado">Selecciona un día</strong>
+                <div class="small text-muted" id="cupoDiaSeleccionado"></div>
+            </div>
+            <ul class="list-group list-group-flush" id="listaCitasDia">
+                <li class="list-group-item text-muted small">Sin citas para mostrar.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal: nueva cita -->
+<div class="modal fade" id="modalNuevaCita" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-calendar-plus"></i> Nueva cita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalCita"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Paciente</label>
+                    <select class="form-select" id="citaPaciente" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Fecha de la cita</label>
+                    <input type="date" class="form-control" id="citaFecha" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hora (opcional)</label>
+                    <input type="time" class="form-control" id="citaHora">
+                    <div class="form-text">Varios pacientes pueden compartir la misma hora sin problema — el cupo se controla por día, no por hora.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-block">Tipo de atención</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="tipoAtencion" id="tipoConOrden" value="CON_ORDEN" checked>
+                        <label class="form-check-label" for="tipoConOrden">Con orden médica</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="tipoAtencion" id="tipoParticular" value="PARTICULAR">
+                        <label class="form-check-label" for="tipoParticular">Particular (sin orden, paciente paga)</label>
+                    </div>
+                </div>
+
+                <div class="mb-3" id="grupoOrden">
+                    <label class="form-label">Orden médica</label>
+                    <select class="form-select" id="citaOrden">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <div class="form-text">La orden se puede asociar más tarde si aún no existe.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Médico (opcional)</label>
+                    <select class="form-select" id="citaMedico">
+                        <option value="">Sin especificar</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-control" id="citaObservaciones" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarCita">Programar cita</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: configurar cupo -->
+<div class="modal fade" id="modalCupo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-sliders"></i> Configurar cupo diario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalCupo"></div>
+                <div class="mb-3">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="cupoFecha" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cupo máximo de citas para ese día</label>
+                    <input type="number" class="form-control" id="cupoMaximo" min="1" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarCupo">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: asociar orden -->
+<div class="modal fade" id="modalAsociarOrden" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-link-45deg"></i> Asociar orden médica</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalAsociar"></div>
+                <input type="hidden" id="asociarCitaId">
+                <div class="mb-3">
+                    <label class="form-label">Orden médica</label>
+                    <select class="form-select" id="asociarOrdenSelect">
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarAsociarOrden">Asociar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/agenda.js"></script>
+{% endblock %}

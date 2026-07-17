@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block titulo %}Gastos - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-wallet2"></i> Gastos de Caja</h2>
+    <button class="btn btn-primary btn-sm" id="btnNuevoGasto">
+        <i class="bi bi-plus-circle"></i> Nuevo gasto
+    </button>
+</div>
+
+<div id="alertaGastos"></div>
+
+<!-- Resumen del día -->
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="card dashboard-card dashboard-card-danger">
+            <div class="card-body">
+                <div class="text-muted small">Gastos hoy</div>
+                <div class="fw-bold fs-4 text-danger" id="totalGastosHoy">$0</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white"><strong><i class="bi bi-pie-chart"></i> Por categoría</strong></div>
+            <div class="card-body" id="resumenCategorias">
+                <div class="text-muted small">Cargando...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Categoría</th>
+                    <th>Descripción</th>
+                    <th>Proveedor</th>
+                    <th>Valor</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaGastos">
+                <tr><td colspan="6" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: nuevo gasto -->
+<div class="modal fade" id="modalNuevoGasto" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalGasto">Nuevo gasto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalGasto"></div>
+                <input type="hidden" id="gastoId">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Categoría *</label>
+                        <select class="form-select" id="gastoCategoria" required></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Valor *</label>
+                        <input type="number" step="0.01" class="form-control" id="gastoValor" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Descripción *</label>
+                        <input class="form-control" id="gastoDescripcion" placeholder="Ej: Compa de papel bond A4" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Proveedor</label>
+                        <input class="form-control" id="gastoProveedor" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Observaciones</label>
+                        <input class="form-control" id="gastoObservaciones">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarGasto">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/gastos.js"></script>
+{% endblock %}

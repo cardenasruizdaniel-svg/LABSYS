@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block titulo %}Validaciones - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<h2 class="mb-3"><i class="bi bi-check-circle"></i> Validaciones</h2>
+
+<div id="alertaValidaciones"></div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-white"><strong>Procesamientos completados sin validación</strong></div>
+    <div class="card-body">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>Muestra</th><th>Analizador</th><th></th></tr>
+            </thead>
+            <tbody id="tablaPendientesValidar">
+                <tr><td colspan="3" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>Validaciones</strong></div>
+    <div class="card-body">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Muestra</th>
+                    <th>Estado</th>
+                    <th>Validador</th>
+                    <th>Resultados</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tablaValidaciones">
+                <tr><td colspan="5" class="text-muted small">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: agregar resultado -->
+<div class="modal fade" id="modalResultado" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar resultado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalResultado"></div>
+                <input type="hidden" id="resultadoValidacionId">
+
+                <div class="mb-2">
+                    <label class="form-label">Examen</label>
+                    <input class="form-control" id="resultadoExamen" list="listaExamenesCatalogo" placeholder="ej. Glucosa en ayunas">
+                    <datalist id="listaExamenesCatalogo"></datalist>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Resultado (texto)</label>
+                        <input class="form-control" id="resultadoTexto">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Valor numérico (opcional)</label>
+                        <input type="number" step="any" class="form-control" id="resultadoValorNumerico">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Unidad</label>
+                        <input class="form-control" id="resultadoUnidad">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Valor de referencia</label>
+                        <input class="form-control" id="resultadoReferencia" placeholder="ej. 70-100">
+                    </div>
+                </div>
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="resultadoCritico">
+                    <label class="form-check-label" for="resultadoCritico">Valor crítico / fuera de rango</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarResultado">Agregar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: validar -->
+<div class="modal fade" id="modalValidar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Validar y finalizar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaModalValidar"></div>
+                <input type="hidden" id="validarId">
+                <div class="mb-2">
+                    <label class="form-label">Validado por</label>
+                    <select class="form-select" id="validarSelect">
+                        <option value="">Seleccione un bacteriólogo/a...</option>
+                    </select>
+                    <div class="form-text">Si tiene firma cargada, se estampará en el PDF del resultado.</div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Observaciones (opcional)</label>
+                    <textarea class="form-control" id="validarObservaciones" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-success" id="btnConfirmarValidar">Validar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/validaciones.js"></script>
+{% endblock %}

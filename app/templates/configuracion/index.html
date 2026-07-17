@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block titulo %}Configuración - LABSYS DIALIZAR{% endblock %}
+
+{% block contenido %}
+
+<h2 class="mb-3"><i class="bi bi-gear"></i> Configuración del laboratorio</h2>
+<p class="text-muted">Estos datos aparecen en el membrete de los resultados y facturas impresas.</p>
+
+<div id="alertaConfig"></div>
+
+<div class="row g-3">
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong><i class="bi bi-image"></i> Logo del laboratorio</strong></div>
+            <div class="card-body text-center">
+                <img id="previewLogo" src="" alt="Logo" class="img-fluid mb-3" style="max-height:150px; display:none;">
+                <p id="sinLogo" class="text-muted small">Todavía no se ha cargado un logo.</p>
+
+                <input type="file" id="inputLogo" accept=".png,.jpg,.jpeg" class="form-control mb-2">
+                <button class="btn btn-primary w-100" id="btnSubirLogo">
+                    <i class="bi bi-upload"></i> Subir logo
+                </button>
+                <div class="form-text">Formatos permitidos: .png, .jpg, .jpeg</div>
+            </div>
+        </div>
+
+        <!-- Configuracion de correo SMTP -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-white"><strong><i class="bi bi-envelope"></i> Correo electronico (SMTP)</strong></div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">
+                    Configure el servidor SMTP para enviar resultados a los pacientes por correo cuando se validen examenes.
+                </p>
+                <div class="row g-2">
+                    <div class="col-8">
+                        <label class="form-label small">Servidor SMTP</label>
+                        <input type="text" class="form-control form-control-sm" id="smtpHost" placeholder="smtp.gmail.com">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small">Puerto</label>
+                        <input type="number" class="form-control form-control-sm" id="smtpPort" placeholder="587">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small">Correo remitente</label>
+                        <input type="email" class="form-control form-control-sm" id="smtpFrom" placeholder="LABSYS &lt;noreply@labsys.co&gt;">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small">Usuario SMTP</label>
+                        <input type="text" class="form-control form-control-sm" id="smtpUser" placeholder="su_correo@gmail.com">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small">Clave SMTP / App Password</label>
+                        <input type="password" class="form-control form-control-sm" id="smtpPassword" placeholder="xxxx-xxxx-xxxx-xxxx">
+                        <div class="form-text">En Gmail: Genere una "Contraseña de aplicacion" en Seguridad de la cuenta de Google.</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm w-100 mt-2" id="btnGuardarSMTP">
+                    <i class="bi bi-save"></i> Guardar configuracion de correo
+                </button>
+                <div id="alertaSMTP" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Borrado de base de datos -->
+        <div class="card shadow-sm mt-3 border-danger">
+            <div class="card-header bg-danger text-white"><strong><i class="bi bi-exclamation-triangle"></i> Zona de peligro</strong></div>
+            <div class="card-body">
+                <div id="alertaBorrar"></div>
+                <p class="text-muted small mb-2">
+                    Seleccione las tablas que desea vaciar. Este proceso <strong>borra todos los datos</strong> de las tablas seleccionadas.
+                    Las tablas de seguridad (usuarios, roles) están protegidas.
+                </p>
+                <div id="listaTablas" class="mb-3">
+                    <div class="text-muted small">Cargando tablas...</div>
+                </div>
+                <button class="btn btn-danger btn-sm w-100" id="btnBorrarDatos">
+                    <i class="bi bi-trash"></i> Borrar datos seleccionados
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong><i class="bi bi-building"></i> Datos del laboratorio</strong></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre del laboratorio</label>
+                        <input type="text" class="form-control" id="nombreLaboratorio">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">NIT</label>
+                        <input type="text" class="form-control" id="nit">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Resolución de habilitación</label>
+                        <input type="text" class="form-control" id="resolucionHabilitacion">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ciudad</label>
+                        <input type="text" class="form-control" id="ciudad">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="correo">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Pie de página (texto legal / acreditación)</label>
+                        <textarea class="form-control" id="piePagina" rows="2"></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-3" id="btnGuardarConfig">
+                    <i class="bi bi-save"></i> Guardar datos
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/configuracion.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const resp = await fetch("/configuracion/tablas");
+        const data = resp.ok ? await resp.json() : { tablas: [], protegidas: [] };
+        const container = document.getElementById("listaTablas");
+
+        if (!data.tablas.length) {
+            container.innerHTML = '<div class="text-muted small">No se encontraron tablas.</div>';
+            return;
+        }
+
+        container.innerHTML = data.tablas.map(t => {
+            const protegida = data.protegidas.includes(t);
+            return `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="${t}" id="tbl_${t}"
+                    ${protegida ? 'disabled' : ''}>
+                <label class="form-check-label ${protegida ? 'text-muted' : ''}" for="tbl_${t}">
+                    ${t} ${protegida ? '<i class="bi bi-lock-fill text-warning ms-1" title="Protegida"></i>' : ''}
+                </label>
+            </div>`;
+        }).join("");
+    } catch (e) { /* silent */ }
+
+    document.getElementById("btnBorrarDatos").addEventListener("click", async () => {
+        const seleccionadas = Array.from(document.querySelectorAll("#listaTablas .form-check-input:checked"))
+            .map(cb => cb.value);
+
+        if (!seleccionadas.length) {
+            document.getElementById("alertaBorrar").innerHTML =
+                '<div class="alert alert-warning py-2">Seleccione al menos una tabla.</div>';
+            return;
+        }
+
+        if (!confirm(`¿Está SEGURO de borrar TODOS los datos de: ${seleccionadas.join(", ")}?\n\nEsta acción NO se puede deshacer.`)) return;
+
+        try {
+            const resp = await fetch("/configuracion/borrar-datos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tablas: seleccionadas }),
+            });
+
+            const data = await resp.json();
+            const tipo = data.errores.length ? "warning" : "success";
+            document.getElementById("alertaBorrar").innerHTML =
+                `<div class="alert alert-${tipo} py-2">${data.mensaje}</div>`;
+
+            document.querySelectorAll("#listaTablas .form-check-input:checked").forEach(cb => cb.checked = false);
+        } catch (e) {
+            document.getElementById("alertaBorrar").innerHTML =
+                '<div class="alert alert-danger py-2">Error de conexión.</div>';
+        }
+    });
+});
+</script>
+{% endblock %}

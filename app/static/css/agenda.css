@@ -1,0 +1,71 @@
+.calendario-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+}
+
+.calendario-cabecera{
+    font-weight:600;
+    text-align:center;
+    color:#0F2D52;
+    margin-bottom:6px;
+    font-size:.85rem;
+}
+
+.dia-celda{
+    min-height:74px;
+    border:1px solid #e3e9f0;
+    border-radius:8px;
+    padding:6px;
+    cursor:pointer;
+    background:#fff;
+    transition:.15s;
+    position:relative;
+}
+
+.dia-celda:hover{
+    border-color:#0B5ED7;
+    box-shadow:0 0 0 2px rgba(11,94,215,.15);
+}
+
+.dia-celda.fuera-de-mes{
+    background:#f5f7fa;
+    color:#b7c0cc;
+}
+
+.dia-celda.seleccionado{
+    border-color:#0B5ED7;
+    box-shadow:0 0 0 2px rgba(11,94,215,.35);
+}
+
+.dia-numero{
+    font-weight:600;
+    font-size:.9rem;
+}
+
+.dia-cupo{
+    position:absolute;
+    bottom:6px;
+    left:6px;
+    right:6px;
+    font-size:.72rem;
+    padding:1px 6px;
+    border-radius:20px;
+    text-align:center;
+    color:#fff;
+}
+
+.dia-cupo.verde{ background:#16A085; }
+.dia-cupo.amarillo{ background:#e0a800; }
+.dia-cupo.rojo{ background:#d9534f; }
+
+.dot{
+    display:inline-block;
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    margin-right:4px;
+}
+.dot-verde{ background:#16A085; }
+.dot-amarillo{ background:#e0a800; }
+.dot-rojo{ background:#d9534f; }

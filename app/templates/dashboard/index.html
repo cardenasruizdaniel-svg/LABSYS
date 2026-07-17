@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LABSYS DIALIZAR - Dashboard</title>
+<link rel="stylesheet" href="/static/css/dashboard.css">
+<script defer src="/static/js/dashboard.js"></script>
+</head>
+<body>
+<header>
+    <h1>LABSYS DIALIZAR</h1>
+    <p>Dashboard Ejecutivo</p>
+</header>
+
+<main class="container">
+
+<section class="kpis">
+    <div class="card"><h3>Pacientes</h3><span id="kpi-pacientes">0</span></div>
+    <div class="card"><h3>Órdenes</h3><span id="kpi-ordenes">0</span></div>
+    <div class="card"><h3>Muestras</h3><span id="kpi-muestras">0</span></div>
+    <div class="card"><h3>Resultados</h3><span id="kpi-resultados">0</span></div>
+    <div class="card"><h3>Facturación</h3><span id="kpi-facturacion">$0</span></div>
+</section>
+
+<section class="charts">
+    <div class="panel">
+        <h2>Órdenes por Estado</h2>
+        <canvas id="chartOrdenes"></canvas>
+    </div>
+
+    <div class="panel">
+        <h2>Facturación por Estado</h2>
+        <canvas id="chartFacturas"></canvas>
+    </div>
+</section>
+
+<section class="activity">
+    <div class="panel">
+        <h2>Actividad reciente</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Módulo</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody id="actividad"></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="quick-actions">
+    <button onclick="location.href='/pacientes'">Pacientes</button>
+    <button onclick="location.href='/ordenes'">Órdenes</button>
+    <button onclick="location.href='/muestras'">Muestras</button>
+    <button onclick="location.href='/resultados'">Resultados</button>
+    <button onclick="location.href='/facturas'">Facturación</button>
+</section>
+
+</main>
+</body>
+</html>
