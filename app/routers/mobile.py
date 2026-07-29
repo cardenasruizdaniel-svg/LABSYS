@@ -18,6 +18,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/mobile", response_class=HTMLResponse)
+@router.get("/mobile/login", response_class=HTMLResponse)
 def mobile_home(request: Request):
     return templates.TemplateResponse("mobile/login.html", {"request": request})
 
