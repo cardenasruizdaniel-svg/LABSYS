@@ -24,7 +24,9 @@ async def lifespan(app: FastAPI):
         from app.database.init_db import initialize_database
         initialize_database()
         print("[startup] Database initialized OK", flush=True)
+        app.state.startup_error = None
     except Exception as e:
+        app.state.startup_error = str(e)
         print(f"[startup] Database init failed: {e}", flush=True)
         import traceback
         traceback.print_exc()
@@ -38,6 +40,29 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+# Health check endpoint (no auth required)
+@app.get("/health")
+def health():
+    import os
+    from app.config.settings import settings
+    url_raw = os.environ.get("DATABASE_URL", "(no definida)")
+    url_final = settings.DATABASE_URL
+    info = {
+        "status": "running",
+        "database_url_raw": url_raw[:30] + "..." if len(url_raw) > 30 else url_raw,
+        "database_url_final": url_final[:30] + "..." if len(url_final) > 30 else url_final,
+        "env_keys": sorted([k for k in os.environ if "DATABASE" in k.upper() or "DB_" in k.upper() or "POSTGRES" in k.upper()]),
+    }
+    try:
+        from app.database.connection import engine
+        conn = engine.connect()
+        conn.close()
+        info["database_connection"] = "OK"
+    except Exception as e:
+        info["database_connection"] = f"ERROR: {e}"
+    info["startup_status"] = getattr(app.state, "startup_error", None)
+    return info
 
 # Routers
 from app.routers.dashboard import router as dashboard_router

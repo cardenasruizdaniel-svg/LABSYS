@@ -32,6 +32,11 @@ class Settings:
         url = os.environ.get("DATABASE_URL") or ""
         url = url.strip().strip("\"'")
         if url:
+            if "+psycopg" not in url and url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+            if "sslmode" not in url:
+                sep = "&" if "?" in url else "?"
+                url += f"{sep}sslmode=require"
             return url
         host = os.getenv("DATABASE_HOST", "localhost")
         port = os.getenv("DATABASE_PORT", "5432")
