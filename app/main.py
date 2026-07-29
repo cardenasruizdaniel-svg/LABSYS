@@ -19,8 +19,15 @@ async def lifespan(app: FastAPI):
     os.makedirs("uploads", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
     os.makedirs("app/static/img", exist_ok=True)
-    from app.database.init_db import initialize_database
-    initialize_database()
+    print("[startup] Initializing database...", flush=True)
+    try:
+        from app.database.init_db import initialize_database
+        initialize_database()
+        print("[startup] Database initialized OK", flush=True)
+    except Exception as e:
+        print(f"[startup] Database init failed: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
     yield
 
 

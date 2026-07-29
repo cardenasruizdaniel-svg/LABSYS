@@ -29,20 +29,22 @@ class Settings:
 
     @property
     def DATABASE_URL(self):
-        url = os.environ.get("DATABASE_URL")
-        if url and url.strip():
-            return url.strip()
+        url = os.environ.get("DATABASE_URL") or ""
+        url = url.strip().strip("\"'")
+        if url:
+            return url
         host = os.getenv("DATABASE_HOST", "localhost")
         port = os.getenv("DATABASE_PORT", "5432")
         name = os.getenv("DATABASE_NAME", "labsys_dializar")
         user = os.getenv("DATABASE_USER", "postgres")
         password = os.getenv("DATABASE_PASSWORD", "postgres")
-        return (
+        url = (
             f"postgresql+psycopg://"
             f"{user}:{password}"
             f"@{host}:{port}/"
             f"{name}"
         )
+        return url
 
 
 settings = Settings()
