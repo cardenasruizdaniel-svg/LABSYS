@@ -61,6 +61,7 @@ from app.routers.caja import router as caja_router
 from app.routers.parametros_examen import router as parametros_examen_router
 from app.routers.gastos import router as gastos_router
 from app.routers.mobile import router as mobile_router
+from app.routers.document_reader import router as document_reader_router
 
 from fastapi.responses import RedirectResponse
 from starlette.requests import Request as StarletteRequest
@@ -121,6 +122,7 @@ app.include_router(caja_router)
 app.include_router(parametros_examen_router)
 app.include_router(gastos_router)
 app.include_router(mobile_router)
+app.include_router(document_reader_router)
 
 
 @app.get("/")

@@ -54,6 +54,9 @@
             </div>
             <div class="modal-body">
                 <div id="alertaModalPaciente"></div>
+                <div id="lectorEstado" class="alert alert-secondary py-1 small mb-2" style="display:none">
+                    <i class="bi bi-upc-scan"></i> <span id="lectorMensaje">Listo para escanear</span>
+                </div>
                 <input type="hidden" id="pacienteId">
 
                 <div class="row g-2">
@@ -69,7 +72,13 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Documento</label>
-                        <input class="form-control" id="pacienteDocumento">
+                        <div class="input-group">
+                            <input class="form-control" id="pacienteDocumento">
+                            <button class="btn btn-outline-primary" type="button" id="btnLeerCedulaPaciente"
+                                    title="Escanear cedula de ciudadania">
+                                <i class="bi bi-upc-scan"></i> Leer Cedula
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-5">
                         <label class="form-label">Sexo</label>
@@ -197,5 +206,6 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="/static/js/lector_cedula.js"></script>
 <script src="/static/js/pacientes.js"></script>
 {% endblock %}

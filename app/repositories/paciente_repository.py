@@ -33,6 +33,13 @@ class PacienteRepository:
         stmt = select(Paciente).where(Paciente.documento == documento)
         return self.db.scalar(stmt)
 
+    def buscar_por_documento(self, tipo_documento: str, documento: str) -> Optional[Paciente]:
+        stmt = select(Paciente).where(
+            Paciente.tipo_documento == tipo_documento,
+            Paciente.documento == documento,
+        )
+        return self.db.scalar(stmt)
+
     def crear(self, paciente: Paciente) -> Paciente:
         self.db.add(paciente)
         self.db.commit()

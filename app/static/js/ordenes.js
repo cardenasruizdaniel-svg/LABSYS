@@ -945,4 +945,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     $("btnImprimirDia").addEventListener("click", imprimirTodoElDia);
     $("btnImprimirSeleccion").addEventListener("click", imprimirSeleccionadas);
+
+    $("btnLeerCedulaOrden").addEventListener("click", () => {
+        $("npDocumento").focus();
+
+        LectorCedula.escanear(
+            function (datos) {
+                LectorCedula.llenarFormulario(datos, "np");
+                const sexoSelect = $("npSexo");
+                if (datos.sexo === "M" || datos.sexo === "Masculino") sexoSelect.value = "Masculino";
+                else if (datos.sexo === "F" || datos.sexo === "Femenino") sexoSelect.value = "Femenino";
+                else if (datos.sexo) sexoSelect.value = datos.sexo;
+
+                if (datos.paciente_existente) {
+                    alerta("alertaNuevoPaciente",
+                        `<i class="bi bi-info-circle"></i> El documento ${datos.tipo_documento} ${datos.documento} ya existe. ` +
+                        `Paciente: ${datos.paciente_nombre}. Seleccione el paciente en la lista o edite los datos.`, "info");
+                } else {
+                    alerta("alertaNuevoPaciente",
+                        `<i class="bi bi-check-circle"></i> Datos de la cedula cargados. Verifique y guarde.`, "success");
+                }
+            },
+            function () {
+                alerta("alertaNuevoPaciente",
+                    "No fue posible interpretar el codigo de barras. Puede ingresar la informacion manualmente.", "warning");
+                document.getElementById("lectorEstado").style.display = "none";
+            }
+        );
+    });
 });

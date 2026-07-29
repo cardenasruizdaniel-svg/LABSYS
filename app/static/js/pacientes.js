@@ -294,4 +294,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
         renderTablaPacientes(filtrados);
     });
+
+    document.getElementById("btnLeerCedulaPaciente").addEventListener("click", () => {
+        const docInput = document.getElementById("pacienteDocumento");
+        docInput.focus();
+
+        LectorCedula.escanear(
+            function (datos) {
+                LectorCedula.llenarFormulario(datos, "paciente");
+                const sexoSelect = document.getElementById("pacienteSexo");
+                if (datos.sexo === "M" || datos.sexo === "Masculino") sexoSelect.value = "Masculino";
+                else if (datos.sexo === "F" || datos.sexo === "Femenino") sexoSelect.value = "Femenino";
+
+                const fec = document.getElementById("pacienteFechaNacimiento");
+                if (datos.fecha_nacimiento && !fec.value) fec.value = datos.fecha_nacimiento;
+
+                if (datos.paciente_existente) {
+                    alertaPac("alertaModalPaciente",
+                        `<i class="bi bi-info-circle"></i> El documento ${datos.tipo_documento} ${datos.documento} ya existe. ` +
+                        `Paciente: ${datos.paciente_nombre}. Puede editar los datos si lo necesita.`, "info");
+                } else {
+                    alertaPac("alertaModalPaciente",
+                        `<i class="bi bi-check-circle"></i> Datos de la cedula cargados. Verifique y guarde.`, "success");
+                }
+            },
+            function () {
+                alertaPac("alertaModalPaciente",
+                    "No fue posible interpretar el codigo de barras. Puede ingresar la informacion manualmente.", "warning");
+                document.getElementById("lectorEstado").style.display = "none";
+            }
+        );
+    });
 });
